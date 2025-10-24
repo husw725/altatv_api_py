@@ -4,25 +4,31 @@ set -e
 APP_NAME="video_scene_api"
 PYTHON_BIN="python3"
 VENV_DIR=".venv"
+GIT_BRANCH="master"
 
 echo "==============================="
 echo "🚀 Starting $APP_NAME on Ubuntu"
 echo "==============================="
 
-# 1️⃣ 创建虚拟环境（如果不存在）
+# 0️⃣ Pull latest code
+echo "📦 Pulling latest code from Git..."
+git fetch origin $GIT_BRANCH
+git reset --hard origin/$GIT_BRANCH
+
+# 1️⃣ Create virtual environment if it doesn't exist
 if [ ! -d "$VENV_DIR" ]; then
-  echo "📦 Creating virtual environment..."
+  echo "📚 Creating virtual environment..."
   $PYTHON_BIN -m venv $VENV_DIR
 fi
 
-# 2️⃣ 激活虚拟环境
+# 2️⃣ Activate virtual environment
 source $VENV_DIR/bin/activate
 
-# 3️⃣ 安装依赖
-echo "📚 Installing dependencies..."
+# 3️⃣ Install dependencies
+echo "📦 Installing dependencies..."
 pip install --upgrade pip
 pip install -r requirements.txt
 
-# 4️⃣ 启动 FastAPI 服务
+# 4️⃣ Start FastAPI server
 echo "🌍 Starting FastAPI server..."
 uvicorn main:app --host 0.0.0.0 --port 5005 --reload
