@@ -8,7 +8,7 @@ cd "$(dirname "$0")"
 APP_NAME="video_scene_api"
 PYTHON_BIN="python3"
 VENV_DIR=".venv"
-GIT_BRANCH="master"
+GIT_BRANCH="https://github.com/husw725/altatv_api_py.git"
 
 echo "==============================="
 echo "🚀 Starting $APP_NAME on Ubuntu"
