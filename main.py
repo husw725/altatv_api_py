@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 # 导入路由
-# from api.scene_api import router as scene_router
+from api.scene_api import router as scene_router
 from api.role_api import router as role_router
 
 # ------------------ 初始化应用 ------------------
@@ -22,7 +22,7 @@ app.add_middleware(
 )
 
 # ------------------ 注册路由 ------------------
-# app.include_router(scene_router, prefix="/api/scene", tags=["SceneDetect"])
+app.include_router(scene_router, prefix="/api/scene", tags=["SceneDetect"])
 app.include_router(role_router, prefix="/api/role", tags=["RoleGrouping"])
 
 # ------------------ 根路由 ------------------

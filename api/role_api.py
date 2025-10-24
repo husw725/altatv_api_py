@@ -44,7 +44,7 @@ def group_roles_api(req: GroupRequest):
         input_dir = tmp_dir
 
         # Step 2: 分组
-        roles = group_roles(input_dir, req.output_dir, req.det_threshold)
+        roles = group_roles(input_dir, req.det_threshold)
 
         # Step 3: 用原始 URL 生成返回结果
         result_roles = {}
