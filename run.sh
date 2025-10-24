@@ -1,5 +1,9 @@
 #!/bin/bash
 set -e
+set -e
+
+# change working directory to the script's folder
+cd "$(dirname "$0")"
 
 APP_NAME="video_scene_api"
 PYTHON_BIN="python3"
