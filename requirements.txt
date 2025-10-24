@@ -1,0 +1,10 @@
+# Web 服务框架
+fastapi
+uvicorn
+opencv-python-headless
+scenedetect
+numpy
+scikit-learn
+pydantic
+insightface
+onnxruntime
