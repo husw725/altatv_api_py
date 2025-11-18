@@ -3,8 +3,8 @@ import numpy as np
 from collections import defaultdict
 from utils.face_utils import extract_feature, cosine_sim, get_role_label
 
-SIM_THRESHOLD = 0.6
-
+SIM_THRESHOLD = 0.55
+DET_THRESHOLD = 0.65
 
 def normalize(v: np.ndarray) -> np.ndarray:
     """L2 normalize feature"""
@@ -13,7 +13,7 @@ def normalize(v: np.ndarray) -> np.ndarray:
 
 def group_roles(
     input_dir: str,
-    det_threshold: float = 0.75,
+    det_threshold: float = DET_THRESHOLD,
     sim_threshold: float = SIM_THRESHOLD
 ) -> dict:
     """

@@ -9,7 +9,7 @@ router = APIRouter()
 class GroupRequest(BaseModel):
     image_urls: List[str]     # 图片 URL 列表
     # output_dir: str           # 输出目录
-    det_threshold: float = 0.75
+    det_threshold: float = 0.55
 
 def download_images(urls: List[str], tmp_dir: str) -> dict:
     """
@@ -44,7 +44,7 @@ def group_roles_api(req: GroupRequest):
         input_dir = tmp_dir
 
         # Step 2: 分组
-        roles = group_roles(input_dir, req.det_threshold)
+        roles = group_roles(input_dir, sim_threshold=req.det_threshold) # det_threshold 当sim_threshold来用,不影响api调用
 
         # Step 3: 用原始 URL 生成返回结果
         result_roles = {}
