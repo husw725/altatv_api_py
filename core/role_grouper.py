@@ -1,8 +1,14 @@
 import os
+import numpy as np
 from collections import defaultdict
 from utils.face_utils import extract_feature, cosine_sim, get_role_label
 
-SIM_THRESHOLD = 0.6  # 人脸特征相似度阈值
+SIM_THRESHOLD = 0.6
+
+
+def normalize(v: np.ndarray) -> np.ndarray:
+    """L2 normalize feature"""
+    return v / (np.linalg.norm(v) + 1e-6)
 
 
 def group_roles(
@@ -11,48 +17,56 @@ def group_roles(
     sim_threshold: float = SIM_THRESHOLD
 ) -> dict:
     """
-    按人脸特征聚类分组（不保存图片）
-    Args:
-        input_dir: 本地图片目录
-        det_threshold: 人脸检测置信度阈值
-        sim_threshold: 特征相似度阈值
-    Returns:
-        dict: {角色名: [图片文件名列表]}
+    按人脸特征聚类分组（支持均值向量 + 多样本更新）
     """
-    role_features = {}          # 每个角色的参考特征
-    role_images = defaultdict(list)
+    role_centroids = {}          # 角色中心特征
+    role_feature_list = defaultdict(list)  # 角色全部特征，用于更新中心
+    role_images = defaultdict(set)         # 使用 set 防止重复
     next_role_id = 0
 
-    for img_name in os.listdir(input_dir):
-        img_path = os.path.join(input_dir, img_name)
-        if not img_path.lower().endswith((".jpg", ".jpeg", ".png")):
-            continue
+    file_list = [f for f in os.listdir(input_dir)
+                 if f.lower().endswith((".jpg", ".jpeg", ".png"))]
 
-        # 提取图片中的人脸特征
+    for img_name in file_list:
+        img_path = os.path.join(input_dir, img_name)
+
+        # 提取特征（可能多张脸）
         features = extract_feature(img_path, det_threshold=det_threshold)
         if not features:
-            role_images["other"].append(img_name)
+            role_images["other"].add(img_name)
             continue
 
         for feat in features:
-            matched_role = None
-            best_sim = 0.0
+            feat = normalize(feat)
 
-            # 与已知角色特征比较
-            for role, ref_feat in role_features.items():
-                sim = cosine_sim(feat, ref_feat)
+            matched_role = None
+            best_sim = -1
+
+            # 1) 与所有已知角色中心比较
+            for role, centroid in role_centroids.items():
+                sim = cosine_sim(feat, centroid)
                 if sim > best_sim:
                     best_sim = sim
                     matched_role = role
 
-            # 若找到相似角色则归入，否则新建角色
-            if matched_role and best_sim >= sim_threshold:
-                role_images[matched_role].append(img_name)
-            else:
+            # 2) 阈值内 → 新角色
+            if matched_role is None or best_sim < sim_threshold:
                 new_role = get_role_label(next_role_id)
-                role_features[new_role] = feat
-                role_images[new_role].append(img_name)
                 next_role_id += 1
 
-    # 返回角色分组结果
-    return dict(role_images)
+                role_feature_list[new_role].append(feat)
+                role_centroids[new_role] = feat   # 首个样本直接作为中心
+                role_images[new_role].add(img_name)
+                continue
+
+            # 3) 匹配到角色 → 添加样本并更新角色中心
+            role_feature_list[matched_role].append(feat)
+
+            # 更新角色 centroid（均值并归一化）
+            new_centroid = np.mean(role_feature_list[matched_role], axis=0)
+            role_centroids[matched_role] = normalize(new_centroid)
+
+            role_images[matched_role].add(img_name)
+
+    # 转换为普通 dict + list
+    return {k: list(v) for k, v in role_images.items()}
